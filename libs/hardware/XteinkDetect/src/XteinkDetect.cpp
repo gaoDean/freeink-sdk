@@ -17,7 +17,8 @@
 //     fingerprint. It reads whatever pins the ACTIVE profile carries, so it is
 //     safe on the S3 X4 Pro too.
 #define FREEINK_XTEINK_C3 (FREEINK_DEVICE_X4 || FREEINK_DEVICE_X3)
-#define FREEINK_XTEINK_DISPLAY_PROBE (FREEINK_DEVICE_X3 || FREEINK_DEVICE_X4 || FREEINK_DEVICE_X4PRO)
+#define FREEINK_XTEINK_DISPLAY_PROBE \
+  (FREEINK_DEVICE_X3 || FREEINK_DEVICE_X4 || FREEINK_DEVICE_X4PRO || FREEINK_DEVICE_MALLORN)
 
 namespace freeink {
 

@@ -27,16 +27,9 @@
 // BACK CONF LEFT RGHT   UP DOWN
 // 3597 2760 1530    6 2300    6
 // 3470 2666 1480    6 2222    5
-// 3470 2655 1470    3 2205    3
-//
-// Averages
-// BACK CONF LEFT RGHT   UP DOWN
-// 3512 2694 1493    5 2242    5
-//
-// Setup ranges, if ADC value is between value `i` and `i + 1`, button `i` is
-// being pressed. These ranges are based on real world values above, and are
-// much more tolerant of different devices than a fixed threshold check. They
-// are calculated by taking the midpoint of the pairs of averaged values above.
+// The Xteink ladder band thresholds below, keyed by group; values are
+// midpoints of measured avg divider readings. Shared by every Xteink ladder
+// board (X3, X4, X4 Pro, Mallorn).
 const int InputManager::ADC_RANGES_1[] = {ADC_NO_BUTTON, 3100, 2090, 750, INT32_MIN};
 const int InputManager::ADC_RANGES_2[] = {ADC_NO_BUTTON, 1120, INT32_MIN};
 const char* InputManager::BUTTON_NAMES[] = {"Back", "Confirm", "Left", "Right", "Up", "Down", "Power"};

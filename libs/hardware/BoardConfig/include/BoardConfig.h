@@ -39,6 +39,9 @@
 #ifndef FREEINK_DEVICE_X4PRO
 #define FREEINK_DEVICE_X4PRO 0
 #endif
+#ifndef FREEINK_DEVICE_MALLORN
+#define FREEINK_DEVICE_MALLORN 0
+#endif
 #ifndef FREEINK_DEVICE_M5
 #define FREEINK_DEVICE_M5 0
 #endif
@@ -68,11 +71,11 @@
 #endif
 
 // --- 2) Coherence: exactly one MCU family, at least one device ---------------
-#if !(FREEINK_DEVICE_X4 || FREEINK_DEVICE_X3 || FREEINK_DEVICE_X4PRO || FREEINK_DEVICE_M5 || FREEINK_DEVICE_MURPHY || \
-      FREEINK_DEVICE_DELINK || FREEINK_DEVICE_LILYGO || FREEINK_DEVICE_M5PAPER || FREEINK_DEVICE_STICKY ||            \
+#if !(FREEINK_DEVICE_X4 || FREEINK_DEVICE_X3 || FREEINK_DEVICE_X4PRO || FREEINK_DEVICE_MALLORN || FREEINK_DEVICE_M5 || \
+      FREEINK_DEVICE_MURPHY || FREEINK_DEVICE_DELINK || FREEINK_DEVICE_LILYGO || FREEINK_DEVICE_M5PAPER || FREEINK_DEVICE_STICKY || \
       FREEINK_DEVICE_PAPERMONO || FREEINK_DEVICE_PAPERS3 || FREEINK_DEVICE_MURPHY_M4)
 #error \
-    "FreeInk: no device selected. Pass at least one -DFREEINK_DEVICE_<NAME> (X4, X3, X4PRO, M5, MURPHY, DELINK, LILYGO, M5PAPER, STICKY, PAPERMONO, PAPERS3, MURPHY_M4) in your build env — see platformio.sample.ini."
+    "FreeInk: no device selected. Pass at least one -DFREEINK_DEVICE_<NAME> (X4, X3, X4PRO, MALLORN, M5, MURPHY, DELINK, LILYGO, M5PAPER, STICKY, PAPERMONO, PAPERS3, MURPHY_M4) in your build env — see platformio.sample.ini."
 #endif
 // Each device belongs to one MCU family; a binary targets exactly one. X3/X4 are
 // ESP32-C3; M5 PaperColor/Murphy/de-link/LilyGo are ESP32-S3; M5Paper v1.1 is the
@@ -81,12 +84,12 @@
 #define FREEINK_MCU_C3 (FREEINK_DEVICE_X3 || FREEINK_DEVICE_X4)
 #define FREEINK_MCU_S3                                                                                    \
   (FREEINK_DEVICE_M5 || FREEINK_DEVICE_MURPHY || FREEINK_DEVICE_DELINK || FREEINK_DEVICE_LILYGO ||        \
-   FREEINK_DEVICE_STICKY || FREEINK_DEVICE_X4PRO || FREEINK_DEVICE_PAPERMONO || FREEINK_DEVICE_PAPERS3 ||  \
-   FREEINK_DEVICE_MURPHY_M4)
+   FREEINK_DEVICE_STICKY || FREEINK_DEVICE_X4PRO || FREEINK_DEVICE_MALLORN || FREEINK_DEVICE_PAPERMONO || \
+   FREEINK_DEVICE_PAPERS3 || FREEINK_DEVICE_MURPHY_M4)
 #define FREEINK_MCU_ESP32 (FREEINK_DEVICE_M5PAPER)
 #if (FREEINK_MCU_C3 + FREEINK_MCU_S3 + FREEINK_MCU_ESP32) != 1
 #error \
-    "FreeInk: all selected devices must share one MCU family — ESP32-C3 (X3/X4), ESP32-S3 (M5/Murphy/de-link/LilyGo/Sticky/X4Pro), or ESP32 (M5Paper). Build one binary per family."
+    "FreeInk: all selected devices must share one MCU family — ESP32-C3 (X3/X4), ESP32-S3 (M5/Murphy/de-link/LilyGo/Sticky/X4Pro/Mallorn), or ESP32 (M5Paper). Build one binary per family."
 #endif
 
 // --- 3) Derive panel drivers from the device set -----------------------------
@@ -97,7 +100,7 @@
 // use SSD1677, UC8179, or UC8279, recovered from OEM firmware and hardware
 // references — see docs/xteink-x4pro-support.md.
 #if FREEINK_DEVICE_X4 || FREEINK_DEVICE_DELINK || FREEINK_DEVICE_STICKY || FREEINK_DEVICE_X4PRO || \
-    FREEINK_DEVICE_MURPHY_M4
+    FREEINK_DEVICE_MALLORN || FREEINK_DEVICE_MURPHY_M4
 #define FREEINK_DRIVER_SSD1677 1
 #else
 #define FREEINK_DRIVER_SSD1677 0
@@ -125,7 +128,7 @@
 #else
 #define FREEINK_DRIVER_UC8279 0
 #endif
-#if FREEINK_DEVICE_X4 || FREEINK_DEVICE_X4PRO
+#if FREEINK_DEVICE_X4 || FREEINK_DEVICE_X4PRO || FREEINK_DEVICE_MALLORN
 #define FREEINK_DRIVER_UC8179 1
 #define FREEINK_DRIVER_UC8279_X4 1
 #else
@@ -180,15 +183,16 @@
 #ifndef FREEINK_CAP_FRONTLIGHT
 #define FREEINK_CAP_FRONTLIGHT                                                                        \
   (FREEINK_DEVICE_DELINK || FREEINK_DEVICE_MURPHY || FREEINK_DEVICE_LILYGO || FREEINK_DEVICE_X4PRO || \
-   FREEINK_DEVICE_PAPERMONO || FREEINK_DEVICE_MURPHY_M4)
+   FREEINK_DEVICE_PAPERMONO || FREEINK_DEVICE_MURPHY_M4 || FREEINK_DEVICE_MALLORN)
 #endif
 // Warm/cool color-temperature frontlight: a second warm PWM channel on top of
-// the brightness one (FrontlightConfig::gpioWarm). Sub-capability of
+// the brightness one (FrontlightConfig::gpioWarm), OR the brightness/color-select
+// topology (FrontlightConfig::gpioColorSelect - Mallorn). Sub-capability of
 // FREEINK_CAP_FRONTLIGHT — gates the warmth UI/settings out of single-channel
 // builds (Paper Mono, de-link, Murphy, LilyGo). Within a multi-device build
 // the profile's gpioWarm stays the runtime truth (hasColorTemperature()).
 #ifndef FREEINK_CAP_WARMLIGHT
-#define FREEINK_CAP_WARMLIGHT (FREEINK_DEVICE_X4PRO || FREEINK_DEVICE_MURPHY_M4)
+#define FREEINK_CAP_WARMLIGHT (FREEINK_DEVICE_X4PRO || FREEINK_DEVICE_MURPHY_M4 || FREEINK_DEVICE_MALLORN)
 #endif
 // USB Mass Storage ("USB Transfer" mode): exposes the SD card to a host over
 // USB-MSC. OPT-IN (default off), NOT board-derived: it forces the build into
@@ -302,7 +306,8 @@
 // Override with -DFREEINK_SD_SDMMC=0/1.
 #ifndef FREEINK_SD_SDMMC
 #define FREEINK_SD_SDMMC \
-  (FREEINK_DEVICE_DELINK || FREEINK_DEVICE_X4PRO || FREEINK_DEVICE_PAPERMONO || FREEINK_DEVICE_MURPHY_M4)
+  (FREEINK_DEVICE_DELINK || FREEINK_DEVICE_X4PRO || FREEINK_DEVICE_PAPERMONO || FREEINK_DEVICE_MURPHY_M4 || \
+   FREEINK_DEVICE_MALLORN)
 #endif
 
 // Serial log transport hint for consumer firmware. Boards can share the same MCU
@@ -346,6 +351,7 @@ enum class Board : uint8_t {
   XteinkX3,
   XteinkX3Uc8279,  // newer X3 production run: same board/glass, UC8279d controller
   XteinkX4Pro,     // ESP32-S3 sibling of the C3 X4: SSD1677 + GT911 touch + warm/cold frontlight
+  Mallorn,         // ESP32-S3 X4-family button device: X4 button ladder, SSD1677, SDMMC, color-select frontlight
   M5StackPaperColor,
   MurphyM3,
   MurphyM4,
@@ -467,6 +473,12 @@ struct BatteryGaugeConfig {
   GaugeType gaugeType = GaugeType::Bq27220;  // register map / init to use
 };
 
+// X3/X4/X4-Pro/Mallorn all share the same two-pin, six-button resistor ladder
+// (Back/Confirm/Left/Right on GPIO1, Up/Down on GPIO2, bands {3900,3100,2090,750}
+// and {3900,1120}), so the ladder pins and band thresholds stay the hard-coded
+// InputManager constants shared by every Xteink ladder board. A board with a
+// genuinely different ladder would add the pin/band override here, but no
+// Xteink board needs one.
 struct InputPins {
   int8_t back;
   int8_t confirm;
@@ -541,6 +553,19 @@ struct FrontlightConfig {
   // on. pwmFrequency still applies (PM1 PWM_FREQ register); resolution is the
   // PM1's fixed 12 bits.
   bool viaPm1Pwm = false;
+  // Brightness/color-select topology: gpio is the brightness PWM pin (common
+  // dimming for both strips) and gpioColorSelect is the color-selection PWM pin.
+  // Both are normal high-frequency LEDC PWM (shared timer / freq / resolution).
+  // gpioColorSelect's duty is INDEPENDENT of brightness - it picks the tint
+  // (0 duty = warm, full duty = cool, mid = blended). PIN_UNASSIGNED otherwise.
+  int8_t gpioColorSelect = PIN_UNASSIGNED;
+  // Optional master enable for the LED boost driver (e.g. Mallorn's LED_ACTIVATE /
+  // GPIO17). A plain GPIO output gated on whether the light is lit. PIN_UNASSIGNED
+  // if no master-enable pin. Polarity is configured by boostActiveHigh.
+  int8_t gpioBoostEnable = PIN_UNASSIGNED;
+  // Polarity for the master boost enable pin. true = active-HIGH (drive HIGH to
+  // power the circuit); false = active-LOW (e.g. Mallorn's LED_ACTIVATE).
+  bool boostActiveHigh = false;
 };
 
 // Audio output description (AudioOutput::None disables it).
@@ -1491,6 +1516,50 @@ constexpr BoardProfile XTEINK_X4_PRO = {
     // historical values pending measurement.
     {9, 7, 3, 7}};
 
+// --- Xteink Mallorn -- 4.26" ESP32-S3 N16R8 X4-family button device -------------
+// The X4 Pro's S3 with X4's resistor-ladder button input and no touch. SSD1677
+// 800x480 SPI panel, native 4-bit SDMMC, and a brightness/color-select frontlight
+// (brightness pin common dimming; color pin low = warm) plus an ACTIVE-LOW
+// LED-boost master pin. Board bring-up pins from docs/PIN_REF.md; contested
+// values (measured only on hardware) are marked PENDING at the field.
+constexpr BoardProfile MALLORN = {
+    Board::Mallorn,
+    "mallorn",
+    InputStyle::XteinkAdcLadder,
+    DisplayController::SSD1677,
+    800,
+    480,
+    // Display SPI: MOSI=io9 SCK=io10 CS=io11 DC=io12 RST=io13 BUSY=io14. Always-on
+    // panel (no powerEnable). {sclk, mosi, cs, dc, rst, busy, powerEnable}
+    {10, 9, 11, 12, 13, 14, PIN_UNASSIGNED},
+    20000000,  // displaySpiHz: SSD default (matches X4 / X4 Pro)
+    // SD is native 4-bit SDMMC (see sdmmc below); this SPI SdPins entry is
+    // unused (always-on SD): powerEnable = PIN_UNASSIGNED.
+    {PIN_UNASSIGNED, PIN_UNASSIGNED, PIN_UNASSIGNED, PIN_UNASSIGNED,
+     PIN_UNASSIGNED, false, 0},
+    // All 6 nav buttons live on the two ADC ladder groups (hard-coded InputManager
+    // constants: Back/Confirm/Left/Right on GPIO1, Up/Down on GPIO2);
+    // back/confirm/left/right/up/down are PIN_UNASSIGNED here. Power button on
+    // GPIO3, ACTIVE-LOW (X4 inherited). {back,confirm,left,right,up,down,power,pwrAHigh}
+    {PIN_UNASSIGNED, PIN_UNASSIGNED, PIN_UNASSIGNED, PIN_UNASSIGNED,
+     PIN_UNASSIGNED, PIN_UNASSIGNED, 3, false},
+    4,                  // batteryAdc: GPIO4 (0.5 divider -> multiplier 2.0)
+    PIN_UNASSIGNED,     // batteryChargeStatus (TP4054 CHRG pin pending, Q11)
+    2.0f,               // batteryDividerMultiplier
+    PIN_UNASSIGNED,     // usbDetect (Q8: no VBUS-detect pin in PIN_REF)
+    NO_TOUCH,
+    // Frontlight: common brightness = PWM GPIO5, color-select = PWM GPIO6
+    // (low = warm), LED-boost master enable = GPIO17 (ACTIVE-LOW). Both PWM pins
+    // 10 kHz / 10-bit, active-HIGH. Order: gpio,freq,resolution,activeHigh,gpioWarm,
+    // viaPm1Pwm,gpioColorSelect,gpioBoostEnable.
+    {5, 10000, 10, true, PIN_UNASSIGNED, false, 6, 17},
+    NO_AUDIO,
+    NO_LEDS,
+    NO_FLIP,  // orientation pending hardware (Q2)
+    {39, 40, 38, 48, 42, 41, 4},  // SDMMC 4-bit: CLK=39 CMD=40 D0=38 D1=48 D2=42 D3=41
+    NO_GAUGE,  // no I2C fuel gauge - battery is ADC pin
+};
+
 // Largest framebuffer (bytes) over the devices compiled into this build, derived
 // from the profiles above. The display facade sizes its static framebuffer to
 // this so one binary holds whichever panel is runtime-selected; a single-device
@@ -1510,9 +1579,9 @@ constexpr uint32_t MAX_FRAMEBUFFER_BYTES = cmax(
                    FREEINK_DEVICE_X4PRO ? panelBytes(XTEINK_X4_PRO) : 0u)),
          cmax(cmax(FREEINK_DEVICE_STICKY ? panelBytes(STICKY) : 0u,
                    FREEINK_DEVICE_PAPERMONO ? panelBytes(PAPER_MONO) : 0u),
-              cmax(FREEINK_DEVICE_PAPERS3 ? panelBytes(M5PAPER_S3) : 0u,
-                   FREEINK_DEVICE_MURPHY_M4 ? panelBytes(MURPHY_M4) : 0u))));
-
+              cmax(FREEINK_DEVICE_MALLORN ? panelBytes(MALLORN) : 0u,
+                   cmax(FREEINK_DEVICE_PAPERS3 ? panelBytes(M5PAPER_S3) : 0u,
+                       FREEINK_DEVICE_MURPHY_M4 ? panelBytes(MURPHY_M4) : 0u)))));
 // Compile-time default device — the profile ACTIVE starts as. With a single
 // device in the build this is the only device; with several same-MCU devices it
 // is the boot default until the consumer calls selectDevice().
@@ -1536,6 +1605,8 @@ constexpr BoardProfile DEFAULT_DEVICE = M5PAPER_S3;
 constexpr BoardProfile DEFAULT_DEVICE = STICKY;
 #elif FREEINK_DEVICE_X4PRO
 constexpr BoardProfile DEFAULT_DEVICE = XTEINK_X4_PRO;
+#elif FREEINK_DEVICE_MALLORN
+constexpr BoardProfile DEFAULT_DEVICE = MALLORN;
 #elif FREEINK_DEVICE_X3 && !FREEINK_DEVICE_X4
 constexpr BoardProfile DEFAULT_DEVICE = XTEINK_X3;  // X3-only binary
 #else
@@ -1608,6 +1679,11 @@ inline bool selectDevice(Board which) {
       ACTIVE = XTEINK_X4_PRO;
       break;
 #endif
+#if FREEINK_DEVICE_MALLORN
+    case Board::Mallorn:
+      ACTIVE = MALLORN;
+      break;
+#endif
 #if FREEINK_DEVICE_PAPERMONO
     case Board::PaperMono:
       ACTIVE = PAPER_MONO;
@@ -1636,6 +1712,7 @@ inline bool isM5PaperV11() { return ACTIVE.board == Board::M5PaperV11; }
 inline bool isM5PaperS3() { return ACTIVE.board == Board::M5PaperS3; }
 inline bool isSticky() { return ACTIVE.board == Board::Sticky; }
 inline bool isX4Pro() { return ACTIVE.board == Board::XteinkX4Pro; }
+inline bool isMallorn() { return ACTIVE.board == Board::Mallorn; }
 inline bool isPaperMono() { return ACTIVE.board == Board::PaperMono; }
 inline bool hasTouch() { return ACTIVE.touch.controller != TouchController::None; }
 inline bool hasHomeKey() { return ACTIVE.touch.hasHomeKey; }

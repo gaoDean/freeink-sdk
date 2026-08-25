@@ -62,10 +62,12 @@ class InputManager {
   static constexpr uint8_t BTN_DOWN = 5;
   static constexpr uint8_t BTN_POWER = 6;
 
-  // Pins. POWER_BUTTON_PIN stays constexpr (consumers reference it in
-  // pin-config contexts) and is bound to the build's default device; the input
-  // code reads the runtime-active power pin internally so multi-device builds
-  // stay correct.
+  // Pins. The Xteink ADC ladder is the same two-pin / six-button resistor
+  // network on every ladder board (X3, X4, X4 Pro, Mallorn), so the group pins
+  // and band thresholds are hard-coded here. POWER_BUTTON_PIN stays constexpr
+  // (consumers reference it in pin-config contexts) and is bound to the build's
+  // default device; the input code reads the runtime-active power pin
+  // internally so multi-device builds stay correct.
   static constexpr int BUTTON_ADC_PIN_1 = 1;
   static constexpr int BUTTON_ADC_PIN_2 = 2;
   static constexpr int POWER_BUTTON_PIN = BoardConfig::DEFAULT_DEVICE.input.power;
@@ -241,8 +243,8 @@ class InputManager {
   // A live sample of one button-group ADC pin: the raw reading plus the BTN_*
   // it currently classifies as (-1 = no band matched). On the Xteink ADC ladder
   // the six buttons are resistor dividers multiplexed onto two ADC pins
-  // (Back/Confirm/Left/Right on group 1, Up/Down on group 2); X3 and X4 share
-  // this pinout. A button-test or calibration screen uses this to spot a
+  // (Back/Confirm/Left/Right on group 1, Up/Down on group 2); X3, X4, X4 Pro
+  // and Mallorn share this pinout. A button-test or calibration screen uses
   // drifted divider whose reading no longer lands in the band the firmware
   // expects — visible from the raw value regardless of how it classifies.
   struct ButtonAdcSample {
