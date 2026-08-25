@@ -5,13 +5,18 @@
 // Drives a PWM frontlight described by BoardConfig::ACTIVE.frontlight. Inert on
 // boards without one (e.g. Xteink X4/X3), so it is always safe to construct.
 //
-// Two topologies, selected purely by the board profile:
+// Three topologies, selected purely by the board profile:
 //   * Single channel (de-link primary LED, LilyGo backlight, Murphy): one PWM pin
 //     (frontlight.gpio). setColorTemperature() is a no-op.
 //   * Warm/cool pair (Xteink X4 Pro: cool=GPIO8, warm=GPIO9): two independent PWM
 //     channels. Overall brightness is the total light; color temperature splits that
 //     total between the cool (gpio) and warm (gpioWarm) strings, so brightness stays
 //     roughly constant as the color shifts. setColorTemperature() drives the mix.
+//   * Brightness/color-select (Xteink Mallorn: bright=GPIO5, colorSelect=GPIO6): the
+//     brightness pin carries the total light level while the color-select pin picks
+//     the tint independently (0 duty = warm, full duty = cool, mid = blended).
+//     setColorTemperature() drives the tint. A separate gpioBoostEnable master pin
+//     (active-low) gates the LED boost driver on/off with the light.
 
 #include <Arduino.h>
 #include <BoardConfig.h>
@@ -50,12 +55,14 @@ class FrontlightManager {
 #endif
   }
 
-  // True when the board wires a second (warm) channel, so setColorTemperature() does
-  // something. False on single-channel frontlights and on boards with none.
+  // True when the board wires a second (warm) channel or a color-select pin, so
+  // setColorTemperature() does something. False on single-channel frontlights
+  // and on boards with none.
   bool hasColorTemperature() const {
 #if FREEINK_CAP_WARMLIGHT
     return BoardConfig::ACTIVE.frontlight.gpio != BoardConfig::PIN_UNASSIGNED &&
-           BoardConfig::ACTIVE.frontlight.gpioWarm != BoardConfig::PIN_UNASSIGNED;
+           (BoardConfig::ACTIVE.frontlight.gpioWarm != BoardConfig::PIN_UNASSIGNED ||
+            BoardConfig::ACTIVE.frontlight.gpioColorSelect != BoardConfig::PIN_UNASSIGNED);
 #else
     return false;  // no warm-channel board in this build (FREEINK_CAP_WARMLIGHT=0)
 #endif

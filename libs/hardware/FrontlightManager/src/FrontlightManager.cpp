@@ -139,6 +139,16 @@ void FrontlightManager::begin() {
   if (fl.gpioWarm != BoardConfig::PIN_UNASSIGNED) {
     attachOk = attachChannel(fl.gpioWarm, LEDC_CH_WARM, fl.pwmFrequency, fl.pwmResolutionBits) || attachOk;
   }
+  if (fl.gpioColorSelect != BoardConfig::PIN_UNASSIGNED) {
+    // Brightness/color-select topology: the color pin is a second full-resolution
+    // LEDC channel on the same timer (shares frequency / resolution / active level).
+    attachOk = attachChannel(fl.gpioColorSelect, LEDC_CH_WARM, fl.pwmFrequency, fl.pwmResolutionBits) || attachOk;
+  }
+  if (fl.gpioBoostEnable != BoardConfig::PIN_UNASSIGNED) {
+    // Pre-load the output register to the disabled state before engaging the driver
+    digitalWrite(fl.gpioBoostEnable, fl.boostActiveHigh ? LOW : HIGH);
+    pinMode(fl.gpioBoostEnable, OUTPUT);
+  }
 #ifdef FREEINK_FRONTLIGHT_LS
   // The FIRST successful KEEP_ALIVE channel config takes a single refcounted +1
   // on the RC_FAST sleep sub-mode (esp_sleep_sub_mode_config; the driver's
@@ -188,16 +198,36 @@ void FrontlightManager::apply() {
   }
   uint32_t warmDuty = 0;
   uint32_t coolDuty = totalDuty;
-  if (dual) {
+  const bool colorSelect = fl.gpioColorSelect != BoardConfig::PIN_UNASSIGNED;
+  // The dual-string split only applies to the warm/cool-pair topology; on the
+  // brightness/color-select topology the color pin's duty is independent of
+  // totalDuty (it picks the tint, not the level), so no split happens here.
+  if (dual && !colorSelect) {
     warmDuty = (totalDuty * _warmPercent + 50u) / 100u;
     coolDuty = totalDuty - warmDuty;
   }
 #ifdef FREEINK_FRONTLIGHT_LS
   updateLsKeepAlive(totalDuty != 0);
 #endif
+  // Gate the LED-boost master pin on whether the light is lit, using configured polarity.
+  if (fl.gpioBoostEnable != BoardConfig::PIN_UNASSIGNED) {
+    const uint8_t activeState = fl.boostActiveHigh ? HIGH : LOW;
+    const uint8_t inactiveState = fl.boostActiveHigh ? LOW : HIGH;
+    digitalWrite(fl.gpioBoostEnable, totalDuty != 0 ? activeState : inactiveState);
+  }
   writeChannel(fl.gpio, LEDC_CH_COOL, physicalDuty(coolDuty, full, fl.activeHigh));
 
-  if (dual) {
+  if (colorSelect) {
+    // Brightness/color-select: flat duty proportional to coolness.
+    // When the light is fully off, gate the color duty to 0 to prevent burning
+    // CPU/peripheral power and generating EMI while the boost converter is disabled.
+    uint32_t colorDuty = 0;
+    if (totalDuty > 0) {
+      const uint32_t coolPct = 100u - _warmPercent;
+      colorDuty = (full * coolPct + 50u) / 100u;
+    }
+    writeChannel(fl.gpioColorSelect, LEDC_CH_WARM, physicalDuty(colorDuty, full, fl.activeHigh));
+  } else if (dual) {
     writeChannel(fl.gpioWarm, LEDC_CH_WARM, physicalDuty(warmDuty, full, fl.activeHigh));
   }
 }
