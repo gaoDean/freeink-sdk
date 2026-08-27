@@ -146,8 +146,8 @@ void FrontlightManager::begin() {
   }
   if (fl.gpioBoostEnable != BoardConfig::PIN_UNASSIGNED) {
     // Pre-load the output register to the disabled state before engaging the driver
-    digitalWrite(fl.gpioBoostEnable, fl.boostActiveHigh ? LOW : HIGH);
     pinMode(fl.gpioBoostEnable, OUTPUT);
+    digitalWrite(fl.gpioBoostEnable, fl.boostActiveHigh ? LOW : HIGH);
   }
 #ifdef FREEINK_FRONTLIGHT_LS
   // The FIRST successful KEEP_ALIVE channel config takes a single refcounted +1
