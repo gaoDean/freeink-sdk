@@ -27,11 +27,13 @@
 // BACK CONF LEFT RGHT   UP DOWN
 // 3597 2760 1530    6 2300    6
 // 3470 2666 1480    6 2222    5
+// Mallorn (ESP32-S3, measured): idle 4095
+// 3430 2602 1260   10  2120   10
 // The Xteink ladder band thresholds below, keyed by group; values are
 // midpoints of measured avg divider readings. Shared by every Xteink ladder
 // board (X3, X4, X4 Pro, Mallorn).
-const int InputManager::ADC_RANGES_1[] = {ADC_NO_BUTTON, 3100, 2090, 750, INT32_MIN};
-const int InputManager::ADC_RANGES_2[] = {ADC_NO_BUTTON, 1120, INT32_MIN};
+const int InputManager::ADC_RANGES_1[] = {ADC_NO_BUTTON, 3016, 1931, 635, INT32_MIN};
+const int InputManager::ADC_RANGES_2[] = {ADC_NO_BUTTON, 1065, INT32_MIN};
 const char* InputManager::BUTTON_NAMES[] = {"Back", "Confirm", "Left", "Right", "Up", "Down", "Power"};
 
 namespace {

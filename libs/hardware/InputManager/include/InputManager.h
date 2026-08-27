@@ -407,7 +407,7 @@ class InputManager {
   static constexpr int NUM_BUTTONS_2 = 2;
   static const int ADC_RANGES_2[];
 
-  static constexpr int ADC_NO_BUTTON = 3900;
+  static constexpr int ADC_NO_BUTTON = 3762;
   static constexpr unsigned long DEBOUNCE_DELAY = 5;
   static constexpr unsigned long CONFIRM_BACK_HOLD_MS = 650;
   static constexpr unsigned long CONFIRM_POWER_HOLD_MS = 400;

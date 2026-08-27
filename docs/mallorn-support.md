@@ -50,9 +50,9 @@ Two ADC groups, same pins as the C3 X4:
 | Group 2 | io2 (GPIO2) | Up / Down | 100 Ω, 12 kΩ |
 
 The ADC thresholds are the shared hard-coded `InputManager` bands (X4 defaults:
-`ADC_RANGES_1` / `ADC_RANGES_2`, i.e. `{3900, 3100, 2090, 750, INT32_MIN}` /
-`{3900, 1120, INT32_MIN}`) — **Pending**: measure real readings per button and
-retune the bands.
+`ADC_RANGES_1` / `ADC_RANGES_2`, i.e. `{3762, 3016, 1931, 635, INT32_MIN}` /
+`{3762, 1065, INT32_MIN}`), tuned to measured Mallorn readings (idle 4095;
+Back/Confirm/Left/Right = 3430/2602/1260/10; Up/Down = 2120/10). — **Confirmed**.
 
 The power button is GPIO3, active-LOW (X4 inherited) — **Pending**: confirm on
 hardware.
@@ -104,7 +104,7 @@ No power-enable pin (SD always on).
 - Frontlight topology / polarity (Q3) — brightness/color-select assumed.
 - SDMMC sweep + always-on power (Q4) — pinout above is from `PIN_REF`.
 - Power-button pin (Q6 area) — GPIO3 inherited from X4.
-- ADC ladder thresholds (Q9) — X4 default bands, unmeasured.
+- ADC ladder thresholds (Q9) — measured on hardware; bands implemented in InputManager.
 - Battery divider (Q10) — 1:2 per `PIN_REF`; multiplier 2.0.
 - Charge-status pin (Q11) — TP4054 CHRG unassigned until measured.
 </content>
