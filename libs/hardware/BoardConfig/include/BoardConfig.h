@@ -1540,9 +1540,11 @@ constexpr BoardProfile MALLORN = {
     // All 6 nav buttons live on the two ADC ladder groups (hard-coded InputManager
     // constants: Back/Confirm/Left/Right on GPIO1, Up/Down on GPIO2);
     // back/confirm/left/right/up/down are PIN_UNASSIGNED here. Power button on
-    // GPIO3, ACTIVE-LOW (X4 inherited). {back,confirm,left,right,up,down,power,pwrAHigh}
+    // GPIO3, ACTIVE-HIGH through a 10k series resistor (pulled down normally;
+    // internal INPUT_PULLDOWN defines sleep idle). Like de-link.
+    // {back,confirm,left,right,up,down,power,pwrAHigh}
     {PIN_UNASSIGNED, PIN_UNASSIGNED, PIN_UNASSIGNED, PIN_UNASSIGNED,
-     PIN_UNASSIGNED, PIN_UNASSIGNED, 3, false},
+     PIN_UNASSIGNED, PIN_UNASSIGNED, 3, true},
     4,                  // batteryAdc: GPIO4 (0.5 divider -> multiplier 2.0)
     PIN_UNASSIGNED,     // batteryChargeStatus (TP4054 CHRG pin pending, Q11)
     2.0f,               // batteryDividerMultiplier

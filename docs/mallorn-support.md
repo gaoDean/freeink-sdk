@@ -54,7 +54,8 @@ The ADC thresholds are the shared hard-coded `InputManager` bands (X4 defaults:
 `{3762, 1065, INT32_MIN}`), tuned to measured Mallorn readings (idle 4095;
 Back/Confirm/Left/Right = 3430/2602/1260/10; Up/Down = 2120/10). — **Confirmed**.
 
-The power button is GPIO3, active-LOW (X4 inherited) — **Pending**: confirm on
+The power button is GPIO3, ACTIVE-HIGH through a 10k series resistor (idle LOW
+via pull-down; internal INPUT_PULLDOWN defines sleep idle) — **Confirmed** on
 hardware.
 
 ## Frontlight — brightness / color-select PWM
